@@ -5,15 +5,26 @@
     .then(res => res.text())
     .then(res => {
       const mainDocument = new DOMParser().parseFromString(res, 'text/html');
-      let commitCount = mainDocument.evaluate('//span[@class="d-none d-sm-inline"]//strong', mainDocument.body).iterateNext().innerText;
-      commitCount = Number(commitCount.trim().replaceAll(',', ''));
-      const commitId = mainDocument
-        .evaluate('//*[@class="f6 Link--secondary text-mono ml-2 d-none d-lg-inline"]', mainDocument.body)
-        .iterateNext()
-        .getAttribute("href")
-        .split('/')
-        .pop();
-      const url = `https://github.com/${repo}/commits/${branch}?after=${commitId}+${commitCount-10}`;
+	  const tmpScripts = mainDocument.getElementsByTagName("script");
+	  let commitCount = 0;
+	  let commitId = '';
+	  for (let i = 0; i < tmpScripts.length; i++) {
+	  	if (tmpScripts[i].hasAttribute('type')) {
+	  		if (tmpScripts[i].getAttribute('type') == 'application/json') {
+	  			let json = JSON.parse(tmpScripts[i].innerHTML, (key, value) => {
+	  				if (key == 'commitCount') {
+	  					commitCount = Number(value.trim().replaceAll(',', ''));
+	  				}
+	  				if (key == 'currentOid') {
+	  					commitId = value;
+	  				}
+	  			})
+	  		}
+	  	}
+	  }
+	  console.log(commitCount)
+	  console.log(commitId)
+    const url = `https://github.com/${repo}/commits/${branch}?after=${commitId}+${commitCount-10}`;
       window.location = url;
   })
 })(window.location.pathname.match(/\/([^\/]+\/[^\/]+)(?:\/(?:tree|commits|blob)\/([^\/]+))?/));
