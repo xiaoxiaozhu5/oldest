@@ -9,7 +9,10 @@ Being able to quickly navigate to the oldest commit page in a repo is quite help
 ### Direct use
 ```js
 (function () {
-    (([_, repo, branch = 'master']) => {
+    const branchButton = document.getElementById('branch-picker-commits');
+    const ariaLabel = branchButton.getAttribute('aria-label');
+    const branchName = ariaLabel.split(' ')[0];
+    (([_, repo, branch = branchName]) => {
         fetch(`https://github.com/${repo}/tree/${branch}`).then(res => res.text()).then(res => {
             let mainDocument = new DOMParser().parseFromString(res, 'text/html');
 			const tmpScripts = mainDocument.getElementsByTagName("script");
@@ -37,7 +40,7 @@ Being able to quickly navigate to the oldest commit page in a repo is quite help
     })(window.location.pathname.match(/\/([^\/]+\/[^\/]+)(?:\/(?:tree|commits|blob)\/([^\/]+))?/))
 })()
 ```
-`branch` maybe change, then copy to console and run
+copy to console and run
 
 ### Credits
 * Inspired by [INIT](https://github.com/FarhadG/init). However there is a limitation on api.github.com calls, so this bookmarklet parses the main page to get the commitID and count.
